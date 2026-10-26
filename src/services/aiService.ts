@@ -124,8 +124,8 @@ class AiService {
 
     const langName = language === 'zh' ? 'Mandarin Chinese (Simplified & Pinyin)' : 'Modern English';
     const learnerRoleDesc = isSon
-      ? 'a 13-year-old student (teenager, enthusiastic, likes gaming, manga, school, fun topics)'
-      : 'the father (an adult professional, focused on travel, precision, natural conversation, confidence)';
+      ? 'Mario, a 13-year-old student (teenager, enthusiastic, likes gaming, anime, friendly competition with his dad Tito)'
+      : 'Tito, the father and mentor (an adult professional, focused on travel, precision, natural conversation, and learning together with his son Mario)';
 
     let groupPrompt = '';
     if (isGroupMode && secondaryCompanion) {

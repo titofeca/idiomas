@@ -44,8 +44,8 @@ export const TelegramSyncModal: React.FC<TelegramSyncModalProps> = ({ onClose })
     telegram.shareInvite(
       targetRole,
       targetRole === 'son'
-        ? `¡Hijo! He completado mi entrenamiento de hoy en LinguaQuest con ${currentProfile.todayMinutes} min. 🏆 ¿Podrás superarme hoy? Entra aquí:`
-        : `¡Papá! Llevo una racha de ${currentProfile.streakDays} días en LinguaQuest. 🚀 ¿Aceptas el reto de idiomas de hoy? Entra aquí:`
+        ? `¡Mario! He completado mi entrenamiento de hoy en LinguaQuest con ${currentProfile.todayMinutes} min. 🏆 ¿Podrás superarme hoy? Entra aquí:`
+        : `¡Tito (Papá)! Llevo una racha de ${currentProfile.streakDays} días en LinguaQuest. 🚀 ¿Aceptas el reto de idiomas de hoy? Entra aquí:`
     );
   };
 
@@ -162,8 +162,8 @@ export const TelegramSyncModal: React.FC<TelegramSyncModalProps> = ({ onClose })
                 className="p-3 rounded-2xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-extrabold flex flex-col items-center justify-center gap-1 transition-all active:scale-98 shadow-xs"
               >
                 <span className="text-xl">👦</span>
-                <span className="text-xs">Retar a mi Hijo</span>
-                <span className="text-[10px] text-sky-600 font-bold">Vía Telegram</span>
+                <span className="text-xs">Retar a Mario</span>
+                <span className="text-[10px] text-sky-600 font-bold">13 años • Telegram</span>
               </button>
 
               <button
@@ -172,8 +172,8 @@ export const TelegramSyncModal: React.FC<TelegramSyncModalProps> = ({ onClose })
                 className="p-3 rounded-2xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-extrabold flex flex-col items-center justify-center gap-1 transition-all active:scale-98 shadow-xs"
               >
                 <span className="text-xl">🧔</span>
-                <span className="text-xs">Retar a mi Padre</span>
-                <span className="text-[10px] text-sky-600 font-bold">Vía Telegram</span>
+                <span className="text-xs">Retar a Tito</span>
+                <span className="text-[10px] text-sky-600 font-bold">Papá • Telegram</span>
               </button>
             </div>
 

@@ -34,7 +34,7 @@ let familyState = {
   son: {
     role: 'son',
     telegramId: null,
-    name: 'Hijo (13 años)',
+    name: 'Mario',
     minutes: 0,
     streak: 0,
     xp: 0,
@@ -44,7 +44,7 @@ let familyState = {
   father: {
     role: 'father',
     telegramId: null,
-    name: 'Papá',
+    name: 'Tito',
     minutes: 0,
     streak: 0,
     xp: 0,

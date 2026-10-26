@@ -51,7 +51,7 @@ interface GameContextType {
 
 const defaultSonProfile: UserProfile = {
   id: 'son',
-  name: 'Hijo (13 años)',
+  name: 'Mario',
   avatar: '👦',
   ageDesc: '13 años • Secundaria',
   selectedCompanionId: 'kenji',
@@ -80,9 +80,9 @@ const defaultSonProfile: UserProfile = {
 
 const defaultFatherProfile: UserProfile = {
   id: 'father',
-  name: 'Papá',
+  name: 'Tito',
   avatar: '🧔',
-  ageDesc: 'Adulto • Mentor',
+  ageDesc: 'Papá • Mentor',
   selectedCompanionId: 'arthur',
   placementCompleted: false,
   assignedLevelZh: 'Sin calibrar',
@@ -206,7 +206,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (role === 'son') {
       setSonProfile((prev) => ({
         ...prev,
-        name: fullName || 'Hijo (13 años)',
+        name: fullName || 'Mario',
         telegramUserId: user.id,
         telegramUsername: user.username,
         telegramPhotoUrl: user.photo_url,
@@ -214,7 +214,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setFatherProfile((prev) => ({
         ...prev,
-        name: fullName || 'Papá',
+        name: fullName || 'Tito',
         telegramUserId: user.id,
         telegramUsername: user.username,
         telegramPhotoUrl: user.photo_url,

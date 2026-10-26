@@ -56,13 +56,13 @@ export const TelegramRoleBindingModal: React.FC<TelegramRoleBindingModalProps> =
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-black text-slate-900 text-sm">Soy el Hijo</span>
+                  <span className="font-black text-slate-900 text-sm">Soy Mario</span>
                   <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full">
                     13 años
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                  Tutor Kenji • Retos de videojuegos, vocabulario dinámico y duelos con papá.
+                  Tutor Kenji • Retos de videojuegos, vocabulario dinámico y duelos con papá Tito.
                 </p>
               </div>
             </div>
@@ -82,13 +82,13 @@ export const TelegramRoleBindingModal: React.FC<TelegramRoleBindingModalProps> =
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-black text-slate-900 text-sm">Soy el Papá</span>
+                  <span className="font-black text-slate-900 text-sm">Soy Tito</span>
                   <span className="text-[10px] bg-indigo-100 text-indigo-800 font-extrabold px-2 py-0.5 rounded-full">
-                    Mentor
+                    Papá / Mentor
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                  Tutor Sir Arthur • Conversación avanzada, viajes y seguimiento de progreso.
+                  Tutor Sir Arthur • Conversación avanzada, viajes y duelo diario con Mario.
                 </p>
               </div>
             </div>

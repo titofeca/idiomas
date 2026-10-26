@@ -88,11 +88,11 @@ async function handleMessage(msg) {
           ],
           [
             {
-              text: '👦 Modo Hijo (13 años)',
+              text: '👦 Modo Mario (13 años)',
               web_app: { url: `${APP_URL}?startapp=son` },
             },
             {
-              text: '🧔 Modo Papá (Mentor)',
+              text: '🧔 Modo Tito (Papá)',
               web_app: { url: `${APP_URL}?startapp=father` },
             },
           ],
@@ -104,7 +104,7 @@ async function handleMessage(msg) {
       chat_id: chatId,
       text: `⚔️ **¡Reto LinguaQuest Activado!**\n\n` +
         `Entrena 15 minutos de conversación por voz hoy y completa 1 Eco de pronunciación.\n` +
-        `¿Podrá el hijo superar al padre hoy?`,
+        `¿Podrá Mario superar a Tito hoy? 🏆`,
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [

@@ -520,7 +520,7 @@ export const MainLearnHub: React.FC<MainLearnHubProps> = ({
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5">
             <Trophy className="w-4 h-4 text-amber-500" />
-            <span className="font-black text-slate-900">Marcador Familiar: Hijo vs Papá</span>
+            <span className="font-black text-slate-900">Marcador Familiar: Mario vs Tito</span>
           </div>
           <span className="text-slate-500 text-[11px]">En dos móviles independientes</span>
         </div>
@@ -528,7 +528,7 @@ export const MainLearnHub: React.FC<MainLearnHubProps> = ({
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center">
             <div className="text-2xl mb-1">{currentProfile.id === 'son' ? currentProfile.avatar : otherProfile.avatar}</div>
-            <div className="font-bold text-slate-900">Hijo (13 años)</div>
+            <div className="font-bold text-slate-900">Mario (13 años)</div>
             <div className="text-emerald-700 font-mono font-black text-sm mt-0.5">
               {currentProfile.id === 'son' ? currentProfile.todayMinutes : otherProfile.todayMinutes} min hoy
             </div>
@@ -539,7 +539,7 @@ export const MainLearnHub: React.FC<MainLearnHubProps> = ({
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center">
             <div className="text-2xl mb-1">{currentProfile.id === 'father' ? currentProfile.avatar : otherProfile.avatar}</div>
-            <div className="font-bold text-slate-900">Papá</div>
+            <div className="font-bold text-slate-900">Tito (Papá)</div>
             <div className="text-indigo-700 font-mono font-black text-sm mt-0.5">
               {currentProfile.id === 'father' ? currentProfile.todayMinutes : otherProfile.todayMinutes} min hoy
             </div>
@@ -559,7 +559,7 @@ export const MainLearnHub: React.FC<MainLearnHubProps> = ({
           className="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-black text-xs flex items-center justify-center gap-2 transition-all active:scale-98 shadow-sm shadow-sky-200"
         >
           <Send className="w-4 h-4 -rotate-12" />
-          <span>Telegram Mini App & Compartir con mi Hijo</span>
+          <span>{currentProfile.id === 'son' ? '🚀 Retar a Tito (Papá) por Telegram' : '🚀 Retar a Mario por Telegram'}</span>
         </button>
 
         <button
