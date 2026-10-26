@@ -41,11 +41,13 @@ const PRESET_MODELS: Record<AiProvider, { id: string; label: string; badge?: str
 };
 
 export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
-  const { aiConfig, updateAiConfig } = useGame();
+  const { aiConfig, updateAiConfig, currentProfile } = useGame();
 
-  const [provider, setProvider] = useState<AiProvider>(aiConfig.provider || 'openrouter');
+  const isFather = currentProfile.id === 'father';
+
+  const [provider, setProvider] = useState<AiProvider>(aiConfig.provider || 'deepseek');
   const [apiKey, setApiKey] = useState<string>(aiConfig.apiKey || '');
-  const [model, setModel] = useState<string>(aiConfig.model || 'deepseek/deepseek-chat');
+  const [model, setModel] = useState<string>(aiConfig.model || 'deepseek-chat');
   const [showKey, setShowKey] = useState<boolean>(false);
   const [isTesting, setIsTesting] = useState<boolean>(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -110,7 +112,9 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
             </div>
             <div>
               <h3 className="font-black text-slate-900 text-base">Cerebro IA para Conversación</h3>
-              <p className="text-xs text-slate-500 font-medium">OpenRouter, DeepSeek o Gemini</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isFather ? 'Configuración Exclusiva de Tito (Papá)' : 'Modo Mario (Estudiante)'}
+              </p>
             </div>
           </div>
           <button
@@ -124,6 +128,48 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
           </button>
         </div>
 
+        {!isFather ? (
+          <div className="py-6 px-2 text-center space-y-4 animate-pop">
+            <div className="w-16 h-16 rounded-3xl bg-indigo-50 border border-indigo-200 text-indigo-600 mx-auto flex items-center justify-center text-3xl shadow-sm">
+              🛡️
+            </div>
+            <div>
+              <h4 className="text-base font-black text-slate-900">
+                Ajustes de IA Gestionados por Tito (Papá)
+              </h4>
+              <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
+                Las claves y conexiones de inteligencia artificial están protegidas para que no tengas que preocuparte por nada técnico.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Estado de la IA:</span>
+                <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  {aiService.isKeyConfigured() ? '✓ Activa y Lista' : 'Modo Guiado Activo'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Motor:</span>
+                <span className="font-bold text-slate-800 uppercase">{aiConfig.provider}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Tutor activo:</span>
+                <span className="font-bold text-slate-800">Kenji & Maestro Long</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                sound.playTap();
+                onClose();
+              }}
+              className="w-full py-3 rounded-2xl bg-indigo-600 text-white font-black text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 active:scale-98"
+            >
+              ¡Entendido, a practicar con mi tutor! 🚀
+            </button>
+          </div>
+        ) : (
         <div className="space-y-5 mt-4 text-xs">
           {/* Provider Selection */}
           <div>
@@ -338,6 +384,7 @@ export const AiConfigModal: React.FC<AiConfigModalProps> = ({ onClose }) => {
             </button>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
