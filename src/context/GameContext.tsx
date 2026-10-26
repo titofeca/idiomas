@@ -43,6 +43,10 @@ interface GameContextType {
   isTelegram: boolean;
   telegramUser: TelegramUser | null;
   linkTelegramToProfile: () => void;
+  showRoleBindingModal: boolean;
+  setShowRoleBindingModal: (show: boolean) => void;
+  assignTelegramRole: (role: 'son' | 'father', user: TelegramUser) => void;
+  syncFamilyProgress: () => Promise<void>;
 }
 
 const defaultSonProfile: UserProfile = {
@@ -139,6 +143,86 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [aiConfig, setAiConfigState] = useState<AiConfig>(() => aiService.getConfig());
   const [isTelegram, setIsTelegram] = useState<boolean>(false);
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
+  const [showRoleBindingModal, setShowRoleBindingModal] = useState<boolean>(false);
+
+  // Sync with cloud server (Railway) to exchange minutes/streak between Father & Son across phones
+  const syncFamilyProgress = async () => {
+    try {
+      const res = await fetch('/api/family');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.father && activeProfileId === 'son') {
+          setFatherProfile((prev) => ({
+            ...prev,
+            name: data.father.name || prev.name,
+            todayMinutes: typeof data.father.minutes === 'number' ? data.father.minutes : prev.todayMinutes,
+            streakDays: typeof data.father.streak === 'number' ? data.father.streak : prev.streakDays,
+            xp: typeof data.father.xp === 'number' ? data.father.xp : prev.xp,
+            telegramUserId: data.father.telegramId || prev.telegramUserId,
+          }));
+        } else if (data.son && activeProfileId === 'father') {
+          setSonProfile((prev) => ({
+            ...prev,
+            name: data.son.name || prev.name,
+            todayMinutes: typeof data.son.minutes === 'number' ? data.son.minutes : prev.todayMinutes,
+            streakDays: typeof data.son.streak === 'number' ? data.son.streak : prev.streakDays,
+            xp: typeof data.son.xp === 'number' ? data.son.xp : prev.xp,
+            telegramUserId: data.son.telegramId || prev.telegramUserId,
+          }));
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
+  };
+
+  const pushFamilySync = async (roleOverride?: 'son' | 'father', tgId?: number, nameOverride?: string) => {
+    try {
+      const role = roleOverride || activeProfileId;
+      const profile = role === 'son' ? sonProfile : fatherProfile;
+      await fetch('/api/family', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role,
+          telegramId: tgId || profile.telegramUserId,
+          name: nameOverride || profile.name,
+          minutes: profile.todayMinutes,
+          streak: profile.streakDays,
+          xp: profile.xp,
+          avatar: profile.avatar,
+        }),
+      });
+    } catch {
+      // Offline fallback
+    }
+  };
+
+  const assignTelegramRole = (role: 'son' | 'father', user: TelegramUser) => {
+    localStorage.setItem(`lq_tg_role_${user.id}`, role);
+    setActiveProfileId(role);
+    const fullName = `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}`;
+
+    if (role === 'son') {
+      setSonProfile((prev) => ({
+        ...prev,
+        name: fullName || 'Hijo (13 años)',
+        telegramUserId: user.id,
+        telegramUsername: user.username,
+        telegramPhotoUrl: user.photo_url,
+      }));
+    } else {
+      setFatherProfile((prev) => ({
+        ...prev,
+        name: fullName || 'Papá',
+        telegramUserId: user.id,
+        telegramUsername: user.username,
+        telegramPhotoUrl: user.photo_url,
+      }));
+    }
+
+    pushFamilySync(role, user.id, fullName);
+  };
 
   useEffect(() => {
     // Initialize Telegram WebApp
@@ -148,12 +232,30 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const tgUser = telegram.getUser();
     setTelegramUser(tgUser);
 
-    const startParam = telegram.getStartParam();
-    if (startParam === 'father') {
-      setActiveProfileId('father');
-    } else if (startParam === 'son') {
-      setActiveProfileId('son');
+    if (tgUser && tgUser.id) {
+      // Check if this Telegram ID already has a bound role
+      const storedRole = localStorage.getItem(`lq_tg_role_${tgUser.id}`) as 'son' | 'father' | null;
+      if (storedRole === 'son' || storedRole === 'father') {
+        setActiveProfileId(storedRole);
+      } else {
+        const startParam = telegram.getStartParam();
+        if (startParam === 'father') {
+          assignTelegramRole('father', tgUser);
+        } else if (startParam === 'son') {
+          assignTelegramRole('son', tgUser);
+        } else {
+          // Open 1-tap onboarding modal so they can identify as Son or Father
+          setShowRoleBindingModal(true);
+        }
+      }
     }
+
+    // Initial family sync
+    syncFamilyProgress();
+
+    // Periodic family sync every 30 seconds
+    const interval = setInterval(syncFamilyProgress, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const updateAiConfig = (newConfig: AiConfig) => {
@@ -380,6 +482,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isTelegram,
         telegramUser,
         linkTelegramToProfile,
+        showRoleBindingModal,
+        setShowRoleBindingModal,
+        assignTelegramRole,
+        syncFamilyProgress,
       }}
     >
       {children}

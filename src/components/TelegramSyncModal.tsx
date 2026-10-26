@@ -30,6 +30,7 @@ export const TelegramSyncModal: React.FC<TelegramSyncModalProps> = ({ onClose })
     linkTelegramToProfile,
     exportSyncData,
     importSyncData,
+    setShowRoleBindingModal,
   } = useGame();
 
   const [copiedLink, setCopiedLink] = useState(false);
@@ -104,25 +105,33 @@ export const TelegramSyncModal: React.FC<TelegramSyncModalProps> = ({ onClose })
         <div className="space-y-5 mt-4 text-xs">
           {/* Status Banner */}
           {isTelegram ? (
-            <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 text-sky-950 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm">
-                  ✓
-                </div>
-                <div>
-                  <div className="font-black text-xs text-sky-900">Mini App Activa en Telegram</div>
-                  <div className="text-[11px] text-sky-700">
-                    Usuario: @{telegramUser?.username || telegramUser?.first_name || 'Amigo'}
+            <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 text-sky-950 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm">
+                    ✓
+                  </div>
+                  <div>
+                    <div className="font-black text-xs text-sky-900">
+                      Identificado como: {activeProfileId === 'son' ? '👦 Hijo (13 años)' : '🧔 Papá'}
+                    </div>
+                    <div className="text-[11px] text-sky-700">
+                      Telegram ID: {telegramUser?.id} {telegramUser?.username ? `(@${telegramUser.username})` : ''}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <button
-                onClick={linkTelegramToProfile}
-                className="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-[11px] transition-all shadow-xs"
-              >
-                Vincular a mi Perfil
-              </button>
+                <button
+                  onClick={() => {
+                    sound.playTap();
+                    setShowRoleBindingModal(true);
+                    onClose();
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-sky-300 text-sky-900 font-extrabold text-[11px] transition-all shadow-xs"
+                >
+                  Cambiar Rol
+                </button>
+              </div>
             </div>
           ) : (
             <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200">

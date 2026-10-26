@@ -11,9 +11,15 @@ import { CompanionSelectorModal } from './components/CompanionSelectorModal';
 import { ProfileSyncModal } from './components/ProfileSyncModal';
 import { AiConfigModal } from './components/AiConfigModal';
 import { TelegramSyncModal } from './components/TelegramSyncModal';
+import { TelegramRoleBindingModal } from './components/TelegramRoleBindingModal';
 
 const MainScreen: React.FC = () => {
-  const { selectedTopic } = useGame();
+  const {
+    selectedTopic,
+    showRoleBindingModal,
+    setShowRoleBindingModal,
+    telegramUser,
+  } = useGame();
   const [showPlacementModal, setShowPlacementModal] = useState(false);
   const [showVoiceSpeakingHub, setShowVoiceSpeakingHub] = useState(false);
   const [showVoiceBlitz, setShowVoiceBlitz] = useState(false);
@@ -97,6 +103,13 @@ const MainScreen: React.FC = () => {
 
       {showTelegramModal && (
         <TelegramSyncModal onClose={() => setShowTelegramModal(false)} />
+      )}
+
+      {showRoleBindingModal && telegramUser && (
+        <TelegramRoleBindingModal
+          telegramUser={telegramUser}
+          onClose={() => setShowRoleBindingModal(false)}
+        />
       )}
     </div>
   );

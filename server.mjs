@@ -28,8 +28,93 @@ const MIME_TYPES = {
   '.ttf': 'font/ttf',
 };
 
+// In-memory + file-backed family scoreboard state for Father vs Son
+const DATA_FILE = path.join(__dirname, 'family-data.json');
+let familyState = {
+  son: {
+    role: 'son',
+    telegramId: null,
+    name: 'Hijo (13 años)',
+    minutes: 0,
+    streak: 0,
+    xp: 0,
+    avatar: '👦',
+    updatedAt: Date.now(),
+  },
+  father: {
+    role: 'father',
+    telegramId: null,
+    name: 'Papá',
+    minutes: 0,
+    streak: 0,
+    xp: 0,
+    avatar: '🧔',
+    updatedAt: Date.now(),
+  },
+};
+
+try {
+  if (fs.existsSync(DATA_FILE)) {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+    familyState = { ...familyState, ...JSON.parse(raw) };
+  }
+} catch (e) {
+  console.warn('Could not load family-data.json:', e.message);
+}
+
 const server = http.createServer((req, res) => {
   const urlPath = req.url.split('?')[0];
+
+  // API endpoint for Father vs Son cloud synchronization
+  if (urlPath === '/api/family') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    if (req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(familyState));
+      return;
+    }
+
+    if (req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        try {
+          const payload = JSON.parse(body);
+          const role = payload.role;
+          if (role === 'son' || role === 'father') {
+            familyState[role] = {
+              ...familyState[role],
+              ...payload,
+              updatedAt: Date.now(),
+            };
+            try {
+              fs.writeFileSync(DATA_FILE, JSON.stringify(familyState, null, 2));
+            } catch (fsErr) {
+              console.warn('Could not write family-data.json', fsErr.message);
+            }
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, family: familyState }));
+        } catch (parseErr) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+      return;
+    }
+  }
+
   let filePath = path.join(DIST_DIR, urlPath === '/' ? 'index.html' : urlPath);
 
   // Security: prevent directory traversal
