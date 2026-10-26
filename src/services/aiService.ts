@@ -3,10 +3,18 @@ import { AiConfig, AiChatResponse, Language, DailyTopic, MangaCompanion } from '
 
 const STORAGE_KEY = 'lq_ai_config';
 
+const envOpenRouter = (import.meta as any).env?.VITE_OPENROUTER_API_KEY || '';
+const envDeepseek = (import.meta as any).env?.VITE_DEEPSEEK_API_KEY || '';
+const envGemini = (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+
+const defaultProvider = envDeepseek && !envOpenRouter ? 'deepseek' : envGemini && !envOpenRouter ? 'gemini' : 'openrouter';
+const defaultModel = defaultProvider === 'deepseek' ? 'deepseek-chat' : defaultProvider === 'gemini' ? 'gemini-2.0-flash' : 'deepseek/deepseek-chat';
+const defaultKey = envOpenRouter || envDeepseek || envGemini || '';
+
 const DEFAULT_CONFIG: AiConfig = {
-  provider: 'openrouter',
-  apiKey: (import.meta as any).env?.VITE_OPENROUTER_API_KEY || (import.meta as any).env?.VITE_DEEPSEEK_API_KEY || '',
-  model: 'deepseek/deepseek-chat',
+  provider: defaultProvider,
+  apiKey: defaultKey,
+  model: defaultModel,
   temperature: 0.7,
   enabled: true,
 };
