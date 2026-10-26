@@ -431,6 +431,110 @@ export const DAILY_TOPICS: DailyTopic[] = [
   // --- TEMAS EN CHINO MANDARÍN (HSK 3.0) ---
   // ==========================================
   {
+    id: 'zh-zero-survival',
+    lang: 'zh',
+    level: 'Principiante Absoluto (Nivel 0)',
+    category: 'Desde Cero & Tonos',
+    title: '🇨🇳 Chino desde Cero: Primeras 5 Palabras y Tonos',
+    subtitle: 'Aprende a decir ¡Hola!, Gracias, Adiós y a dominar los 4 tonos cantados',
+    emoji: '🌱',
+    description: 'Perfecto para empezar hoy sin saber nada. Domina las 5 expresiones esenciales que usan 1.400 millones de personas y descubre cómo suenan los 4 tonos como notas musicales.',
+    estimatedMinutes: 20,
+    vocabulary: [
+      {
+        term: '你好 (Nǐ hǎo)',
+        pinyinOrIpa: 'Nǐ hǎo (pronunciado: ni jao)',
+        translation: '¡Hola! (Nǐ = tú, Hǎo = bien/bueno)',
+        example: '你好！我是学生。',
+        exampleTranslation: '¡Hola! Soy estudiante.'
+      },
+      {
+        term: '谢谢 (Xièxie)',
+        pinyinOrIpa: 'Xièxie (pronunciado: sié-sie)',
+        translation: '¡Muchas gracias!',
+        example: '太好了，谢谢你！',
+        exampleTranslation: '¡Qué bien, muchas gracias!'
+      },
+      {
+        term: '不客气 (Bú kèqi)',
+        pinyinOrIpa: 'Bú kèqi (pronunciado: bu ke-chi)',
+        translation: 'De nada / No hay de qué',
+        example: '不客气，我们是朋友！',
+        exampleTranslation: '¡De nada, somos amigos!'
+      },
+      {
+        term: '再见 (Zàijiàn)',
+        pinyinOrIpa: 'Zàijiàn (pronunciado: tsai-tien)',
+        translation: '¡Adiós / Hasta la vista!',
+        example: '明天见，再见！',
+        exampleTranslation: '¡Hasta mañana, adiós!'
+      },
+      {
+        term: '好的 (Hǎo de)',
+        pinyinOrIpa: 'Hǎo de (pronunciado: jao de)',
+        translation: 'De acuerdo / Vale / Está bien',
+        example: '好的，没问题！',
+        exampleTranslation: '¡De acuerdo, sin problema!'
+      }
+    ],
+    keyGrammarRule: {
+      title: 'Los 4 tonos como notas musicales',
+      explanation: 'En chino la melodía cambia el significado: 1º Tono (ˉ) agudo sostenido como cantar "aaa". 2º Tono (ˊ) sube como preguntar "¿¿qué??". 3º Tono (ˇ) baja y sube como un bostezo. 4º Tono (ˋ) baja tajante como un "¡NO!".',
+      sample: 'Mā (mamá ˉ), Má (cáñamo ˊ), Mǎ (caballo ˇ), Mà (reñir ˋ).'
+    },
+    botRoleplay: {
+      botPersona: 'Maestro Long (Tutor de Chino desde Cero)',
+      scenarioContext: 'El Maestro Long te da la bienvenida a tu primerísimo día de chino mandarín con una sonrisa.',
+      openingMessage: {
+        text: '你好！(Nǐ hǎo!) ¡Bienvenido a tu primer día de chino! Para empezar, repite conmigo: "Nǐ hǎo".',
+        pinyin: 'Nǐ hǎo! Wǒ shì Lóng Lǎoshī.',
+        translation: '¡Hola! Soy el Maestro Long. Para empezar, repite conmigo: "Nǐ hǎo".',
+        suggestedResponses: [
+          '你好！ (Nǐ hǎo! - ¡Hola!)',
+          '你好，老师！ (Nǐ hǎo, lǎoshī! - ¡Hola profesor!)',
+          '好的！ (Hǎo de! - ¡Vale!)'
+        ]
+      },
+      dialogueFlow: [
+        {
+          triggerUserContains: ['ni hao', 'nǐ hǎo', '你好', 'hola', 'nihao'],
+          botResponse: '太棒了！(Tài bàng le!) ¡Tu pronunciación de "Nǐ hǎo" ha sido impecable! Ahora prueba a decir "Xièxie" (gracias).',
+          pinyin: 'Tài bàng le! Xiànzài shìshì "Xièxie".',
+          translation: '¡Fantástico! Tu pronunciación de "Nǐ hǎo" ha sido impecable. Ahora prueba a decir "Xièxie" (gracias).',
+          feedbackNote: '¡Excelente control del 3er tono! Al juntar dos terceros tonos, el primero sube ligeramente a 2º tono de forma natural.',
+          nextSuggestions: [
+            '谢谢！ (Xièxie! - ¡Gracias!)',
+            '谢谢老师！ (Xièxie lǎoshī! - ¡Gracias profesor!)',
+            '不客气 (Bú kèqi - De nada)'
+          ]
+        },
+        {
+          triggerUserContains: ['xie', 'xièxie', 'xiexie', '谢谢', 'gracias'],
+          botResponse: '很好！(Hěn hǎo!) "Xièxie" perfecto. Y si alguien te da las gracias, puedes responder "Bú kèqi" (de nada).',
+          pinyin: 'Hěn hǎo! Nǐ kěyǐ shuō "Bú kèqi".',
+          translation: '¡Muy bien! "Xièxie" perfecto. Y si alguien te da las gracias, puedes responder "Bú kèqi" (de nada).',
+          feedbackNote: 'Tono 4º descendente firme muy bien marcado.',
+          nextSuggestions: [
+            '不客气 (Bú kèqi - De nada)',
+            '再见！ (Zàijiàn! - ¡Adiós!)',
+            '好的！ (Hǎo de! - ¡Vale!)'
+          ]
+        },
+        {
+          triggerUserContains: ['zaijian', 'zàijiàn', '再见', 'adios', 'adiós'],
+          botResponse: '再见！(Zàijiàn!) ¡Has completado tus primeras expresiones básicas de chino! ¡Qué gran comienzo!',
+          pinyin: 'Zàijiàn! Míngtiān jiàn!',
+          translation: '¡Adiós! ¡Hasta mañana! Has completado tus primeras expresiones básicas de chino.',
+          feedbackNote: '¡Lección 0 completada con éxito!',
+          nextSuggestions: [
+            '再见！ (Zàijiàn!)',
+            '明天见！ (Míngtiān jiàn! - ¡Hasta mañana!)'
+          ]
+        }
+      ]
+    }
+  },
+  {
     id: 'zh-meeting-friends',
     lang: 'zh',
     level: 'HSK 3.0 Nivel 1 (Fase 1 y 2)',

@@ -8,6 +8,7 @@ import { speech } from '../services/speechService';
 import { aiService } from '../services/aiService';
 import { telegram } from '../services/telegramService';
 import { AiConfigModal } from './AiConfigModal';
+import { ChineseAdaptedKeyboard } from './ChineseAdaptedKeyboard';
 import {
   Mic,
   Volume2,
@@ -514,17 +515,33 @@ export const VoiceSpeakingHub: React.FC<VoiceSpeakingHubProps> = ({
                       {m.text}
                     </p>
                     {isBot && (
-                      <button
-                        onClick={() =>
-                          speech.speak(m.text, language, {
-                            companionId: speakerCompanionId,
-                          })
-                        }
-                        className="p-1 rounded-full text-slate-400 hover:text-indigo-600 shrink-0"
-                        title="Escuchar locución con su voz propia"
-                      >
-                        <Volume2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() =>
+                            speech.speak(m.text, language, {
+                              companionId: speakerCompanionId,
+                            })
+                          }
+                          className="p-1 rounded-full text-slate-400 hover:text-indigo-600"
+                          title="Escuchar locución normal"
+                        >
+                          <Volume2 className="w-4 h-4" />
+                        </button>
+                        {language === 'zh' && (
+                          <button
+                            onClick={() =>
+                              speech.speak(m.text, language, {
+                                companionId: speakerCompanionId,
+                                pace: 0.55,
+                              })
+                            }
+                            className="px-1.5 py-0.5 rounded-lg text-slate-400 hover:text-amber-600 text-xs font-bold hover:bg-amber-50"
+                            title="Escuchar en cámara lenta (0.6x) para captar cada tono"
+                          >
+                            🐢
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -680,14 +697,42 @@ export const VoiceSpeakingHub: React.FC<VoiceSpeakingHubProps> = ({
             </div>
           )}
 
-          {/* Fallback keyboard input */}
-          <div className="w-full mt-3 flex items-center gap-2">
+          {/* Chinese Adapted Smart Keyboard */}
+          {language === 'zh' && (
+            <div className="w-full mt-2.5">
+              <ChineseAdaptedKeyboard
+                currentInputText={textInput}
+                onSelectCandidate={(hanzi) => {
+                  const words = textInput.trim().split(/\s+/);
+                  if (words.length > 0) {
+                    words[words.length - 1] = hanzi;
+                    setTextInput(words.join(' ') + ' ');
+                  } else {
+                    setTextInput(hanzi + ' ');
+                  }
+                }}
+                onQuickPhraseClick={(phrase) => {
+                  setTextInput((prev) => (prev ? `${prev.trim()} ${phrase}` : phrase));
+                }}
+                onInsertToneChar={(char) => {
+                  setTextInput((prev) => prev + char);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Keyboard input */}
+          <div className="w-full mt-2.5 flex items-center gap-2">
             <input
               type="text"
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder="O escribe aquí si prefieres teclear..."
-              className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+              placeholder={
+                language === 'zh'
+                  ? "Escribe en pinyin (ej. 'ni', 'hao', 'xie') o toca las frases de arriba..."
+                  : "O escribe aquí si prefieres teclear..."
+              }
+              className="flex-1 px-4 py-2.5 bg-white border border-slate-300 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && textInput.trim()) {
                   handleVoiceSubmitted(textInput);
@@ -703,7 +748,7 @@ export const VoiceSpeakingHub: React.FC<VoiceSpeakingHubProps> = ({
                 }
               }}
               disabled={!textInput.trim()}
-              className="p-2 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-40"
+              className="p-2.5 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-40 transition-all shadow-xs"
               title="Enviar texto"
             >
               <Send className="w-4 h-4" />
