@@ -232,7 +232,6 @@ const server = http.createServer((req, res) => {
       return;
     }
   }
-  }
 
   let filePath = path.join(DIST_DIR, urlPath === '/' ? 'index.html' : urlPath);
 
