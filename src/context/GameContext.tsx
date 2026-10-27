@@ -107,6 +107,35 @@ const defaultFatherProfile: UserProfile = {
   openedChestsCount: 1,
 };
 
+const mergeProfile = (base: UserProfile, savedJson: string | null): UserProfile => {
+  if (!savedJson) return base;
+  try {
+    const parsed = JSON.parse(savedJson);
+    if (!parsed || typeof parsed !== 'object') return base;
+    return {
+      ...base,
+      ...parsed,
+      name: parsed.name || base.name,
+      avatar: parsed.avatar || base.avatar,
+      historyTopics: Array.isArray(parsed.historyTopics) ? parsed.historyTopics : base.historyTopics,
+      unlockedAchievements: Array.isArray(parsed.unlockedAchievements)
+        ? parsed.unlockedAchievements
+        : base.unlockedAchievements,
+      streakShields: typeof parsed.streakShields === 'number' ? parsed.streakShields : base.streakShields,
+      todayMinutes: typeof parsed.todayMinutes === 'number' ? parsed.todayMinutes : base.todayMinutes,
+      goalMinutes: typeof parsed.goalMinutes === 'number' ? parsed.goalMinutes : base.goalMinutes,
+      streakDays: typeof parsed.streakDays === 'number' ? parsed.streakDays : base.streakDays,
+      xp: typeof parsed.xp === 'number' ? parsed.xp : base.xp,
+      gems: typeof parsed.gems === 'number' ? parsed.gems : base.gems,
+      level: typeof parsed.level === 'number' ? parsed.level : base.level,
+      league: parsed.league || base.league,
+    };
+  } catch (e) {
+    console.warn('Error reading stored profile, resetting to default', e);
+    return base;
+  }
+};
+
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -114,27 +143,41 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeProfileId, setActiveProfileId] = useState<'son' | 'father'>('son');
 
   const [sonProfile, setSonProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('lq_v2_profile_son');
-    return saved ? JSON.parse(saved) : defaultSonProfile;
+    return mergeProfile(defaultSonProfile, localStorage.getItem('lq_v2_profile_son'));
   });
 
   const [fatherProfile, setFatherProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('lq_v2_profile_father');
-    return saved ? JSON.parse(saved) : defaultFatherProfile;
+    return mergeProfile(defaultFatherProfile, localStorage.getItem('lq_v2_profile_father'));
   });
 
   const [selectedTopicId, setSelectedTopicIdState] = useState<string>(() => {
-    return language === 'zh' ? 'zh-meeting-friends' : 'en-gaming';
+    return language === 'zh' ? 'zh-zero-survival' : 'en-gaming';
   });
 
   const [srsCards, setSrsCards] = useState<SrsCard[]>(() => {
-    const saved = localStorage.getItem('lq_srs_cards');
-    return saved ? JSON.parse(saved) : [...CHINESE_SRS_CARDS, ...ENGLISH_SRS_CARDS];
+    try {
+      const saved = localStorage.getItem('lq_srs_cards');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error loading srs cards', e);
+    }
+    return [...CHINESE_SRS_CARDS, ...ENGLISH_SRS_CARDS];
   });
 
   const [dailyQuests, setDailyQuests] = useState<DailyQuest[]>(() => {
-    const saved = localStorage.getItem('lq_daily_quests');
-    return saved ? JSON.parse(saved) : INITIAL_DAILY_QUESTS;
+    try {
+      const saved = localStorage.getItem('lq_daily_quests');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error loading daily quests', e);
+    }
+    return INITIAL_DAILY_QUESTS;
   });
 
   const [pace, setPace] = useState<number>(0.85);

@@ -129,9 +129,27 @@ const server = http.createServer((req, res) => {
     if (!err && stats.isFile()) {
       const ext = path.extname(filePath).toLowerCase();
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      
+      // Hashed assets can be cached aggressively; index.html and sw.js should never be cached
+      if (urlPath.startsWith('/assets/')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (ext === '.html' || urlPath === '/sw.js') {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+      }
+
       res.writeHead(200, { 'Content-Type': contentType });
       fs.createReadStream(filePath).pipe(res);
     } else {
+      // If the request points to an asset with a file extension that does not exist, return 404
+      // This prevents the browser from treating 404 HTML responses as valid JavaScript files
+      if (path.extname(urlPath)) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end(`Asset not found: ${urlPath}`);
+        return;
+      }
+
       // SPA Fallback: serve index.html for client-side routing
       const indexPath = path.join(DIST_DIR, 'index.html');
       fs.readFile(indexPath, (indexErr, content) => {
@@ -140,6 +158,7 @@ const server = http.createServer((req, res) => {
           res.end('Build not found. Run "npm run build" first.');
           return;
         }
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
         res.end(content);
       });

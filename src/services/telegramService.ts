@@ -28,8 +28,8 @@ class TelegramService {
     if (!tg) return;
 
     try {
-      tg.ready();
-      tg.expand();
+      if (typeof tg.ready === 'function') tg.ready();
+      if (typeof tg.expand === 'function') tg.expand();
       if (typeof tg.setHeaderColor === 'function') {
         tg.setHeaderColor('#f8fafc');
       }
