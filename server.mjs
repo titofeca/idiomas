@@ -28,45 +28,84 @@ const MIME_TYPES = {
   '.ttf': 'font/ttf',
 };
 
-// In-memory + file-backed family scoreboard state for Father vs Son
+// In-memory + file-backed family scoreboard state for Father vs Son and dynamic members
 const DATA_FILE = path.join(__dirname, 'family-data.json');
-let familyState = {
-  son: {
-    role: 'son',
-    telegramId: null,
-    name: 'Mario',
-    minutes: 0,
-    streak: 0,
-    xp: 0,
-    avatar: '👦',
-    updatedAt: Date.now(),
+let familyDb = {
+  users: {
+    son: {
+      id: 'son',
+      role: 'son',
+      telegramId: null,
+      name: 'Mario',
+      avatar: '👦',
+      ageDesc: '13 años • Secundaria',
+      level: 3,
+      league: 'Oro',
+      xp: 180,
+      gems: 120,
+      streak: 4,
+      minutes: 18,
+      todayMinutes: 18,
+      goalMinutes: 45,
+      streakShields: 2,
+      historyTopics: ['en-gaming'],
+      unlockedAchievements: ['first_lesson', 'tone_sniper'],
+      updatedAt: Date.now(),
+    },
+    father: {
+      id: 'father',
+      role: 'father',
+      telegramId: null,
+      name: 'Tito',
+      avatar: '🧔',
+      ageDesc: 'Papá • Mentor',
+      level: 2,
+      league: 'Plata',
+      xp: 110,
+      gems: 70,
+      streak: 3,
+      minutes: 12,
+      todayMinutes: 12,
+      goalMinutes: 30,
+      streakShields: 1,
+      historyTopics: ['en-travel-coffee'],
+      unlockedAchievements: ['first_lesson'],
+      updatedAt: Date.now(),
+    },
   },
-  father: {
-    role: 'father',
-    telegramId: null,
-    name: 'Tito',
-    minutes: 0,
-    streak: 0,
-    xp: 0,
-    avatar: '🧔',
-    updatedAt: Date.now(),
-  },
+  members: ['son', 'father'],
 };
 
 try {
   if (fs.existsSync(DATA_FILE)) {
     const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    familyState = { ...familyState, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    if (parsed.users) {
+      familyDb = { ...familyDb, ...parsed, users: { ...familyDb.users, ...parsed.users } };
+    } else {
+      // Migrate legacy flat state
+      if (parsed.son) familyDb.users.son = { ...familyDb.users.son, ...parsed.son };
+      if (parsed.father) familyDb.users.father = { ...familyDb.users.father, ...parsed.father };
+    }
   }
 } catch (e) {
   console.warn('Could not load family-data.json:', e.message);
 }
 
-const server = http.createServer((req, res) => {
-  const urlPath = req.url.split('?')[0];
+const saveDb = () => {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(familyDb, null, 2));
+  } catch (fsErr) {
+    console.warn('Could not write family-data.json', fsErr.message);
+  }
+};
 
-  // API endpoint for Father vs Son cloud synchronization
-  if (urlPath === '/api/family') {
+const server = http.createServer((req, res) => {
+  const [urlPath, queryString] = req.url.split('?');
+  const params = new URLSearchParams(queryString || '');
+
+  // Enable CORS for API routes
+  if (urlPath.startsWith('/api/')) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -77,35 +116,47 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    if (req.method === 'GET') {
+    // GET /api/family - returns full scoreboard and members
+    if (urlPath === '/api/family' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(familyState));
+      res.end(JSON.stringify({
+        son: familyDb.users.son,
+        father: familyDb.users.father,
+        users: familyDb.users,
+        members: familyDb.members,
+      }));
       return;
     }
 
-    if (req.method === 'POST') {
+    // POST /api/family - updates any user/role profile with full persistence
+    if (urlPath === '/api/family' && req.method === 'POST') {
       let body = '';
-      req.on('data', (chunk) => {
-        body += chunk;
-      });
+      req.on('data', (chunk) => { body += chunk; });
       req.on('end', () => {
         try {
           const payload = JSON.parse(body);
-          const role = payload.role;
-          if (role === 'son' || role === 'father') {
-            familyState[role] = {
-              ...familyState[role],
+          const userId = payload.id || payload.role || (payload.telegramId ? `tg_${payload.telegramId}` : null);
+          if (userId) {
+            const existing = familyDb.users[userId] || {};
+            familyDb.users[userId] = {
+              ...existing,
               ...payload,
+              id: userId,
               updatedAt: Date.now(),
             };
-            try {
-              fs.writeFileSync(DATA_FILE, JSON.stringify(familyState, null, 2));
-            } catch (fsErr) {
-              console.warn('Could not write family-data.json', fsErr.message);
+            if (!familyDb.members.includes(userId)) {
+              familyDb.members.push(userId);
             }
+            saveDb();
           }
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true, family: familyState }));
+          res.end(JSON.stringify({
+            success: true,
+            son: familyDb.users.son,
+            father: familyDb.users.father,
+            users: familyDb.users,
+            members: familyDb.members,
+          }));
         } catch (parseErr) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Invalid JSON' }));
@@ -113,6 +164,74 @@ const server = http.createServer((req, res) => {
       });
       return;
     }
+
+    // POST /api/family/add-member - Add a new family member (Mom, Brother, Friend)
+    if (urlPath === '/api/family/add-member' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const payload = JSON.parse(body);
+          const name = (payload.name || 'Nuevo Miembro').trim();
+          const memberId = payload.id || `member_${Date.now()}`;
+          const newMember = {
+            id: memberId,
+            role: payload.role || 'member',
+            telegramId: payload.telegramId || null,
+            name,
+            avatar: payload.avatar || '⭐',
+            ageDesc: payload.ageDesc || 'Familiar',
+            level: 1,
+            league: 'Bronce',
+            xp: 0,
+            gems: 50,
+            streak: 1,
+            minutes: 0,
+            todayMinutes: 0,
+            goalMinutes: 30,
+            streakShields: 1,
+            historyTopics: [],
+            unlockedAchievements: ['first_lesson'],
+            updatedAt: Date.now(),
+          };
+          familyDb.users[memberId] = newMember;
+          if (!familyDb.members.includes(memberId)) {
+            familyDb.members.push(memberId);
+          }
+          saveDb();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, member: newMember, users: familyDb.users, members: familyDb.members }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid request' }));
+        }
+      });
+      return;
+    }
+
+    // GET /api/user - fetch single user by id or telegramId
+    if (urlPath === '/api/user' && req.method === 'GET') {
+      const targetId = params.get('id');
+      const tgId = params.get('telegramId');
+      let foundUser = null;
+
+      if (targetId && familyDb.users[targetId]) {
+        foundUser = familyDb.users[targetId];
+      } else if (tgId) {
+        const numTg = Number(tgId);
+        foundUser = Object.values(familyDb.users).find((u) => u.telegramId === numTg);
+      }
+
+      if (foundUser) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, user: foundUser }));
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'User not found' }));
+      }
+      return;
+    }
+  }
   }
 
   let filePath = path.join(DIST_DIR, urlPath === '/' ? 'index.html' : urlPath);

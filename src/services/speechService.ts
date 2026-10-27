@@ -27,6 +27,22 @@ class SpeechService {
     this.voices = this.synth.getVoices();
   }
 
+  public unlock() {
+    if (!this.synth) return;
+    try {
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
+      // Warm up synthesis with a silent/empty character to unlock mobile autoplay restriction
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0.01;
+      u.rate = 1.5;
+      this.synth.speak(u);
+    } catch (e) {
+      console.warn('Speech synthesis unlock note:', e);
+    }
+  }
+
   public getVoices(): SpeechSynthesisVoice[] {
     if (this.voices.length === 0) {
       this.loadVoices();

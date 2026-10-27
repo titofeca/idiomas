@@ -5,7 +5,7 @@ import { Flame, Zap, Trophy, Gift, ArrowRight, Swords, Sparkles, CheckCircle2, A
 import { TabType } from '../components/BottomNav';
 
 interface HomeViewProps {
-  setActiveTab: (tab: TabType) => void;
+  setActiveTab: (tab: any) => void;
   onOpenMysteryChest: () => void;
   onOpenToneLab: () => void;
   onOpenHanziDraw: () => void;

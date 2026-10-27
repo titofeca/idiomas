@@ -1,6 +1,6 @@
 export type Language = 'zh' | 'en';
 
-export type UserRole = 'son' | 'father';
+export type UserRole = 'son' | 'father' | string;
 
 export type League = 'Bronce' | 'Plata' | 'Oro' | 'Zafiro' | 'Diamante' | 'Leyenda';
 

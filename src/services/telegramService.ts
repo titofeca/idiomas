@@ -67,7 +67,44 @@ class TelegramService {
     }
   }
 
-  public shareInvite(role: 'son' | 'father', customMessage?: string) {
+  private backButtonCallback: (() => void) | null = null;
+
+  public showBackButton(callback: () => void) {
+    const tg = this.getTg();
+    if (!tg?.BackButton) return;
+    try {
+      if (this.backButtonCallback && typeof tg.BackButton.offClick === 'function') {
+        tg.BackButton.offClick(this.backButtonCallback);
+      }
+      this.backButtonCallback = callback;
+      if (typeof tg.BackButton.onClick === 'function') {
+        tg.BackButton.onClick(callback);
+      }
+      if (typeof tg.BackButton.show === 'function') {
+        tg.BackButton.show();
+      }
+    } catch (e) {
+      console.warn('Telegram BackButton warning:', e);
+    }
+  }
+
+  public hideBackButton() {
+    const tg = this.getTg();
+    if (!tg?.BackButton) return;
+    try {
+      if (this.backButtonCallback && typeof tg.BackButton.offClick === 'function') {
+        tg.BackButton.offClick(this.backButtonCallback);
+        this.backButtonCallback = null;
+      }
+      if (typeof tg.BackButton.hide === 'function') {
+        tg.BackButton.hide();
+      }
+    } catch (e) {
+      console.warn('Telegram BackButton hide warning:', e);
+    }
+  }
+
+  public shareInvite(role: 'son' | 'father' | string, customMessage?: string) {
     const defaultMsg =
       role === 'son'
         ? '¡Papá, he avanzado en mi reto de idiomas en LinguaQuest! 🚀 ¿Aceptas el duelo hoy?'

@@ -27,8 +27,23 @@ export const TelegramRoleBindingModal: React.FC<TelegramRoleBindingModalProps> =
   const displayName = telegramUser.first_name + (telegramUser.last_name ? ' ' + telegramUser.last_name : '');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-pop">
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 text-center">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/70 backdrop-blur-md animate-pop"
+    >
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 text-center max-h-[92vh] overflow-y-auto relative">
+        <button
+          onClick={() => {
+            sound.playTap();
+            onClose();
+          }}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center text-sm font-bold"
+        >
+          ✕
+        </button>
+
         {/* Telegram User Badge */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-sky-800 text-xs font-bold mb-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Home, BookOpen, ScrollText, Swords, Trophy } from 'lucide-react';
+import { MapPin, Mic, Layers, Swords } from 'lucide-react';
 import { sound } from '../services/soundEffects';
+import { telegram } from '../services/telegramService';
 
-export type TabType = 'home' | 'learn' | 'stories' | 'challenges' | 'profile';
+export type TabType = 'roadmap' | 'voice' | 'srs' | 'duel';
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -10,16 +11,15 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab }) => {
-  const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'home', label: 'Inicio', icon: <Home className="w-5 h-5" /> },
-    { id: 'learn', label: 'Aprender', icon: <BookOpen className="w-5 h-5" /> },
-    { id: 'stories', label: 'Historias', icon: <ScrollText className="w-5 h-5" /> },
-    { id: 'challenges', label: 'Retos', icon: <Swords className="w-5 h-5" /> },
-    { id: 'profile', label: 'Piques', icon: <Trophy className="w-5 h-5" /> },
+  const tabs: { id: TabType; label: string; icon: React.ReactNode; badge?: string }[] = [
+    { id: 'roadmap', label: 'Aventura', icon: <MapPin className="w-5 h-5" /> },
+    { id: 'voice', label: 'Dojo Voz', icon: <Mic className="w-5 h-5" />, badge: 'IA' },
+    { id: 'srs', label: 'Tarjetas', icon: <Layers className="w-5 h-5" /> },
+    { id: 'duel', label: 'Duelo', icon: <Swords className="w-5 h-5" />, badge: 'VS' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 pb-[env(safe-area-inset-bottom,8px)] pt-1 px-3">
+    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 pb-[max(env(safe-area-inset-bottom,10px),10px)] pt-1.5 px-3 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       <div className="max-w-md mx-auto flex items-center justify-around">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -28,18 +28,36 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab })
               key={tab.id}
               onClick={() => {
                 sound.playTap();
+                telegram.haptic('light');
                 setActiveTab(tab.id);
               }}
-              className={`flex flex-col items-center py-1.5 px-3 rounded-2xl transition-all ${
+              className={`flex flex-col items-center py-1 px-3 rounded-2xl transition-all relative ${
                 isActive
-                  ? 'text-indigo-400 font-bold scale-105'
-                  : 'text-slate-400 hover:text-slate-200 active:scale-95'
+                  ? 'text-indigo-600 font-extrabold scale-105'
+                  : 'text-slate-400 hover:text-slate-700 active:scale-95'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${isActive ? 'bg-indigo-950/80 text-indigo-400 shadow-sm shadow-indigo-500/20' : ''}`}>
+              <div
+                className={`p-1.5 rounded-2xl transition-all relative ${
+                  isActive
+                    ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100 ring-2 ring-indigo-500/10'
+                    : 'text-slate-400'
+                }`}
+              >
                 {tab.icon}
+                {tab.badge && (
+                  <span
+                    className={`absolute -top-1 -right-1.5 text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase ${
+                      isActive
+                        ? 'bg-amber-400 text-slate-900 shadow-xs'
+                        : 'bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
               </div>
-              <span className="text-[11px] mt-0.5 tracking-tight">{tab.label}</span>
+              <span className="text-[11px] mt-0.5 tracking-tight font-bold">{tab.label}</span>
             </button>
           );
         })}

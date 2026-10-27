@@ -107,8 +107,13 @@ export const BossBattleModal: React.FC<BossBattleModalProps> = ({ onClose }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/90 backdrop-blur-md animate-pop">
-      <div className={`w-full max-w-md bg-slate-900 border-2 border-red-500/50 rounded-3xl p-5 shadow-2xl flex flex-col ${shake ? 'animate-wiggle' : ''}`}>
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md animate-pop"
+    >
+      <div className={`w-full max-w-md bg-slate-900 border-2 border-red-500/50 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[92vh] overflow-y-auto ${shake ? 'animate-wiggle' : ''}`}>
         {/* Boss Banner */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2">

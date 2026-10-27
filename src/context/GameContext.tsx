@@ -12,10 +12,12 @@ import { TelegramUser } from '../types/telegram';
 interface GameContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  activeProfileId: 'son' | 'father';
-  switchProfile: (profileId: 'son' | 'father') => void;
+  activeProfileId: string;
+  switchProfile: (profileId: string) => void;
   currentProfile: UserProfile;
   otherProfile: UserProfile;
+  allProfiles: UserProfile[];
+  addNewFamilyMember: (name: string, tgId?: number, avatar?: string, ageDesc?: string) => Promise<UserProfile | undefined>;
   selectedTopic: DailyTopic;
   setSelectedTopicId: (topicId: string) => void;
   availableTopics: DailyTopic[];
@@ -140,7 +142,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
-  const [activeProfileId, setActiveProfileId] = useState<'son' | 'father'>('son');
+  const [activeProfileId, setActiveProfileId] = useState<string>('son');
 
   const [sonProfile, setSonProfile] = useState<UserProfile>(() => {
     return mergeProfile(defaultSonProfile, localStorage.getItem('lq_v2_profile_son'));
@@ -148,6 +150,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [fatherProfile, setFatherProfile] = useState<UserProfile>(() => {
     return mergeProfile(defaultFatherProfile, localStorage.getItem('lq_v2_profile_father'));
+  });
+
+  const [extraProfiles, setExtraProfiles] = useState<UserProfile[]>(() => {
+    try {
+      const saved = localStorage.getItem('lq_v2_extra_profiles');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
 
   const [selectedTopicId, setSelectedTopicIdState] = useState<string>(() => {
@@ -213,21 +224,39 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             telegramUserId: data.son.telegramId || prev.telegramUserId,
           }));
         }
+
+        // Sync any dynamic members added by other devices
+        if (data.users) {
+          const remoteExtra = Object.values(data.users).filter(
+            (u: any) => u.id !== 'son' && u.id !== 'father'
+          ) as UserProfile[];
+          if (remoteExtra.length > 0) {
+            setExtraProfiles((prev) => {
+              const map = new Map<string, UserProfile>();
+              prev.forEach((p) => map.set(p.id, p));
+              remoteExtra.forEach((p) => map.set(p.id, { ...map.get(p.id), ...p }));
+              return Array.from(map.values());
+            });
+          }
+        }
       }
     } catch {
       // Offline fallback
     }
   };
 
-  const pushFamilySync = async (roleOverride?: 'son' | 'father', tgId?: number, nameOverride?: string) => {
+  const pushFamilySync = async (roleOverride?: string, tgId?: number, nameOverride?: string) => {
     try {
-      const role = roleOverride || activeProfileId;
-      const profile = role === 'son' ? sonProfile : fatherProfile;
+      const all = [sonProfile, fatherProfile, ...extraProfiles];
+      const targetId = roleOverride || activeProfileId;
+      const profile = all.find((p) => p.id === targetId) || sonProfile;
       await fetch('/api/family', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role,
+          ...profile,
+          id: profile.id,
+          role: profile.id,
           telegramId: tgId || profile.telegramUserId,
           name: nameOverride || profile.name,
           minutes: profile.todayMinutes,
@@ -265,6 +294,63 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     pushFamilySync(role, user.id, fullName);
+  };
+
+  const addNewFamilyMember = async (
+    name: string,
+    tgId?: number,
+    avatar: string = '⭐',
+    ageDesc: string = 'Familiar'
+  ): Promise<UserProfile | undefined> => {
+    const newId = `member_${Date.now()}`;
+    const newMember: UserProfile = {
+      id: newId,
+      name,
+      avatar,
+      ageDesc,
+      selectedCompanionId: 'kenji',
+      placementCompleted: false,
+      assignedLevelZh: 'Sin calibrar',
+      assignedLevelEn: 'Sin calibrar',
+      xp: 0,
+      level: 1,
+      league: 'Bronce',
+      gems: 50,
+      streakDays: 1,
+      streakShields: 1,
+      todayMinutes: 0,
+      goalMinutes: 30,
+      lastActiveDate: new Date().toISOString().split('T')[0],
+      completedTopicsCount: 0,
+      historyTopics: [],
+      cardsMasteredZh: 0,
+      cardsMasteredEn: 0,
+      personalBestStreak: 1,
+      personalBestDailyXp: 0,
+      todayXp: 0,
+      unlockedAchievements: ['first_lesson'],
+      openedChestsCount: 0,
+      telegramUserId: tgId,
+    };
+
+    setExtraProfiles((prev) => [...prev, newMember]);
+    setActiveProfileId(newId);
+
+    if (tgId) {
+      localStorage.setItem(`lq_tg_role_${tgId}`, newId);
+    }
+
+    try {
+      await fetch('/api/family/add-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMember),
+      });
+    } catch {
+      // Offline fallback
+    }
+
+    return newMember;
   };
 
   useEffect(() => {
@@ -321,24 +407,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     localStorage.setItem('lq_v2_profile_son', JSON.stringify(sonProfile));
+    pushFamilySync('son', sonProfile.telegramUserId, sonProfile.name);
   }, [sonProfile]);
 
   useEffect(() => {
     localStorage.setItem('lq_v2_profile_father', JSON.stringify(fatherProfile));
+    pushFamilySync('father', fatherProfile.telegramUserId, fatherProfile.name);
   }, [fatherProfile]);
 
-  const currentProfile = activeProfileId === 'son' ? sonProfile : fatherProfile;
-  const otherProfile = activeProfileId === 'son' ? fatherProfile : sonProfile;
+  useEffect(() => {
+    localStorage.setItem('lq_v2_extra_profiles', JSON.stringify(extraProfiles));
+  }, [extraProfiles]);
+
+  const allProfiles: UserProfile[] = [sonProfile, fatherProfile, ...extraProfiles];
+  const currentProfile = allProfiles.find((p) => p.id === activeProfileId) || sonProfile;
+  const otherProfile =
+    allProfiles.find((p) => p.id !== activeProfileId) ||
+    (activeProfileId === 'son' ? fatherProfile : sonProfile);
 
   const updateCurrentProfile = (updater: (prev: UserProfile) => UserProfile) => {
     if (activeProfileId === 'son') {
       setSonProfile(updater);
-    } else {
+    } else if (activeProfileId === 'father') {
       setFatherProfile(updater);
+    } else {
+      setExtraProfiles((prev) =>
+        prev.map((p) => (p.id === activeProfileId ? updater(p) : p))
+      );
     }
   };
 
-  const switchProfile = (profileId: 'son' | 'father') => {
+  const switchProfile = (profileId: string) => {
     sound.playTap();
     setActiveProfileId(profileId);
   };
@@ -498,6 +597,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         switchProfile,
         currentProfile,
         otherProfile,
+        allProfiles,
+        addNewFamilyMember,
         selectedTopic,
         setSelectedTopicId,
         availableTopics,
