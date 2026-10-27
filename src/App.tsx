@@ -3,6 +3,7 @@ import { GameProvider, useGame } from './context/GameContext';
 import { Header } from './components/Header';
 import { BottomNav, TabType } from './components/BottomNav';
 import { RoadmapQuestView } from './views/RoadmapQuestView';
+import { ComicReaderView } from './views/ComicReaderView';
 import { VoiceDojoView } from './views/VoiceDojoView';
 import { SrsFlashcardsView } from './views/SrsFlashcardsView';
 import { FamilyDuelView } from './views/FamilyDuelView';
@@ -121,6 +122,10 @@ const MainScreen: React.FC = () => {
           />
         )}
 
+        {activeTab === 'comic' && (
+          <ComicReaderView onOpenVoiceRoom={handleOpenVoice} />
+        )}
+
         {activeTab === 'voice' && (
           <VoiceDojoView
             onOpenConversation={handleOpenVoice}
@@ -148,6 +153,7 @@ const MainScreen: React.FC = () => {
       <FloatingMangaCompanion
         onOpenVoiceRoom={() => handleOpenVoice()}
         onOpenSelector={() => setShowCompanionModal(true)}
+        onOpenComic={() => setActiveTab('comic')}
       />
 
       {/* Ergonomic Bottom Navigation Bar */}

@@ -43,6 +43,42 @@ export interface MangaCompanion {
   personality: string;
 }
 
+export type AvatarExpression = 'idle' | 'talking' | 'happy' | 'thinking' | 'surprised' | 'proud' | 'celebrating';
+
+export interface ComicVignette {
+  id: string;
+  characterId: string;
+  characterName: string;
+  expression: AvatarExpression;
+  bubbleType?: 'normal' | 'shout' | 'whisper' | 'thought';
+  text: string;
+  pinyin?: string;
+  translation: string;
+  onomatopoeia?: { text: string; subtext?: string; color: string; rotation?: string };
+  userRoleplayPrompt?: {
+    instruction: string;
+    targetPhrase: string;
+    pinyin?: string;
+    translation: string;
+    options?: string[];
+    coachTip?: string;
+  };
+}
+
+export interface ComicChapter {
+  id: string;
+  title: string;
+  subtitle: string;
+  lang: Language;
+  level: string;
+  genre: 'shonen' | 'mystery' | 'martial-arts' | 'cyberpunk';
+  coverEmoji: string;
+  coverGradient: string;
+  rewardXp: number;
+  rewardGems: number;
+  vignettes: ComicVignette[];
+}
+
 export interface UserProfile {
   id: UserRole;
   name: string;

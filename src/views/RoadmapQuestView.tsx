@@ -196,6 +196,41 @@ export const RoadmapQuestView: React.FC<RoadmapQuestViewProps> = ({
             </div>
           </div>
 
+          {/* Node 2: Interactive Manga Comic Roleplay Adventure */}
+          <div
+            onClick={() => {
+              sound.playTap();
+              telegram.haptic('medium');
+              setActiveTab('comic');
+            }}
+            className="relative z-10 flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-purple-50 via-pink-50 to-amber-50 border-2 border-purple-400/70 hover:border-purple-500 cursor-pointer shadow-sm active:scale-98 transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-500 text-white flex items-center justify-center text-xl shadow-md shrink-0 animate-pulse">
+                📖
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-600 text-white uppercase tracking-wider">
+                    Cómic con Avatares
+                  </span>
+                  <span className="text-[10px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded-md">
+                    +80 XP
+                  </span>
+                </div>
+                <h4 className="font-black text-slate-900 text-sm mt-0.5 leading-snug">
+                  Manga Interactivo & Viñetas de Voz
+                </h4>
+                <p className="text-[11px] text-slate-600 line-clamp-1">
+                  Habla por micrófono con Kenji, Maestro Long, Sir Arthur y Mei
+                </p>
+              </div>
+            </div>
+            <div className="p-2 rounded-xl bg-purple-600 text-white shadow-xs">
+              <ChevronRight className="w-4 h-4 text-white" />
+            </div>
+          </div>
+
           {/* Node 2: Mystery Chest Node */}
           <div
             onClick={() => {

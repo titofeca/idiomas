@@ -1,25 +1,126 @@
 import React from 'react';
+import { AvatarExpression } from '../types';
 
-interface MangaAvatarProps {
+export interface MangaAvatarProps {
   id: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  expression?: AvatarExpression;
+  isSpeaking?: boolean;
+  isListening?: boolean;
   className?: string;
+  onClick?: () => void;
 }
 
-export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', className = '' }) => {
+export const MangaAvatar: React.FC<MangaAvatarProps> = ({
+  id,
+  size = 'md',
+  expression = 'idle',
+  isSpeaking = false,
+  isListening = false,
+  className = '',
+  onClick,
+}) => {
   const sizeMap = {
     sm: 'w-10 h-10',
     md: 'w-14 h-14',
     lg: 'w-20 h-20',
     xl: 'w-28 h-28',
+    '2xl': 'w-36 h-36',
   };
 
   const currentSize = sizeMap[size] || sizeMap.md;
 
+  // Emotional visual effects
+  const isHappy = expression === 'happy' || expression === 'celebrating';
+  const isTalking = isSpeaking || expression === 'talking';
+  const isSurprised = expression === 'surprised';
+  const isThinking = expression === 'thinking';
+  const isProud = expression === 'proud';
+
+  // Badge icon on corner
+  const renderEmoteBadge = () => {
+    if (isListening) {
+      return (
+        <span
+          className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-black shadow-md animate-pulse ring-2 ring-white"
+          title="Escuchando tu voz"
+        >
+          👂
+        </span>
+      );
+    }
+    if (isSpeaking) {
+      return (
+        <span
+          className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black shadow-md animate-bounce ring-2 ring-white"
+          title="Hablando"
+        >
+          🗣️
+        </span>
+      );
+    }
+    if (isHappy) {
+      return (
+        <span className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-5 h-5 rounded-full bg-pink-500 text-white text-[10px] font-black shadow-md ring-2 ring-white">
+          ✨
+        </span>
+      );
+    }
+    if (isSurprised) {
+      return (
+        <span className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-black shadow-md animate-ping ring-2 ring-white">
+          ❗
+        </span>
+      );
+    }
+    if (isThinking) {
+      return (
+        <span className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-5 h-5 rounded-full bg-sky-500 text-white text-[10px] font-black shadow-md ring-2 ring-white">
+          💭
+        </span>
+      );
+    }
+    if (isProud) {
+      return (
+        <span className="absolute -top-1.5 -right-1.5 z-20 flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black shadow-md ring-2 ring-white">
+          👑
+        </span>
+      );
+    }
+    return null;
+  };
+
+  // Outer border & aura based on state
+  const getOuterRings = () => {
+    if (isListening) return 'ring-4 ring-emerald-400 ring-offset-2 animate-pulse';
+    if (isSpeaking) return 'ring-4 ring-amber-400 ring-offset-2 animate-pulse';
+    if (isHappy || isProud) return 'ring-3 ring-amber-300 ring-offset-1 shadow-lg shadow-amber-200/50';
+    return '';
+  };
+
+  // Soundwave indicator when speaking
+  const renderSoundWave = () => {
+    if (!isSpeaking) return null;
+    return (
+      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20 flex items-end gap-0.5 px-1.5 py-0.5 bg-slate-900/90 rounded-full border border-amber-300 shadow-md">
+        <span className="w-0.5 h-2 bg-amber-300 animate-pulse rounded-full" />
+        <span className="w-0.5 h-3.5 bg-amber-200 animate-pulse delay-75 rounded-full" />
+        <span className="w-0.5 h-2 bg-amber-300 animate-pulse delay-150 rounded-full" />
+      </div>
+    );
+  };
+
   if (id === 'kenji') {
     // ⚡ Kenji: Shonen Anime Gamer Hero with Headset & Spiky Hair
     return (
-      <div className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md ${className}`}>
+      <div
+        onClick={onClick}
+        className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md select-none transition-transform duration-200 ${
+          onClick ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+        } ${getOuterRings()} ${className}`}
+      >
+        {renderEmoteBadge()}
+        {renderSoundWave()}
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="kenjiBg" x1="0" y1="0" x2="1" y2="1">
@@ -34,8 +135,8 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
           {/* Background circle */}
           <rect width="100" height="100" fill="url(#kenjiBg)" />
           {/* Lightning backdrop bolts */}
-          <path d="M75 10 L65 30 L80 30 L60 60 L70 38 L55 38 Z" fill="#ffffff" opacity="0.3" />
-          
+          <path d="M75 10 L65 30 L80 30 L60 60 L70 38 L55 38 Z" fill="#ffffff" opacity={isTalking || isHappy ? '0.45' : '0.25'} />
+
           {/* Gamer Headphones headband */}
           <path d="M 22 45 A 28 28 0 0 1 78 45" fill="none" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" />
           {/* Headphone earcups */}
@@ -56,22 +157,57 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
           {/* Forehead fringe */}
           <path d="M 32 40 L 40 48 L 46 38 L 54 48 L 62 38 L 68 45 Q 50 32 32 40 Z" fill="#d97706" />
 
-          {/* Anime Eyes */}
-          {/* Left Eye */}
-          <ellipse cx="42" cy="52" rx="4.5" ry="5.5" fill="#0f172a" />
-          <circle cx="43" cy="50.5" r="1.8" fill="#ffffff" />
-          <path d="M 36 46 Q 42 43 47 46" fill="none" stroke="#78350f" strokeWidth="2" strokeLinecap="round" />
+          {/* Eyes according to expression */}
+          {isHappy ? (
+            <>
+              {/* Happy curved anime eyes */}
+              <path d="M 36 53 Q 42 47 48 53" fill="none" stroke="#78350f" strokeWidth="3" strokeLinecap="round" />
+              <path d="M 52 53 Q 58 47 64 53" fill="none" stroke="#78350f" strokeWidth="3" strokeLinecap="round" />
+            </>
+          ) : isSurprised ? (
+            <>
+              {/* Surprised wide eyes */}
+              <ellipse cx="42" cy="52" rx="5.5" ry="6" fill="#0f172a" />
+              <circle cx="43" cy="50" r="2.2" fill="#ffffff" />
+              <ellipse cx="58" cy="52" rx="5.5" ry="6" fill="#0f172a" />
+              <circle cx="59" cy="50" r="2.2" fill="#ffffff" />
+              <path d="M 35 44 Q 42 40 48 44" fill="none" stroke="#78350f" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 52 44 Q 58 40 65 44" fill="none" stroke="#78350f" strokeWidth="2.5" strokeLinecap="round" />
+            </>
+          ) : (
+            <>
+              {/* Normal / Default anime eyes */}
+              <ellipse cx="42" cy="52" rx="4.5" ry="5.5" fill="#0f172a" />
+              <circle cx="43" cy="50.5" r="1.8" fill="#ffffff" />
+              <path d="M 36 46 Q 42 43 47 46" fill="none" stroke="#78350f" strokeWidth="2" strokeLinecap="round" />
 
-          {/* Right Eye */}
-          <ellipse cx="58" cy="52" rx="4.5" ry="5.5" fill="#0f172a" />
-          <circle cx="59" cy="50.5" r="1.8" fill="#ffffff" />
-          <path d="M 53 46 Q 58 43 64 46" fill="none" stroke="#78350f" strokeWidth="2" strokeLinecap="round" />
+              <ellipse cx="58" cy="52" rx="4.5" ry="5.5" fill="#0f172a" />
+              <circle cx="59" cy="50.5" r="1.8" fill="#ffffff" />
+              <path d="M 53 46 Q 58 43 64 46" fill="none" stroke="#78350f" strokeWidth="2" strokeLinecap="round" />
+            </>
+          )}
 
-          {/* Cheerful anime mouth grin */}
-          <path d="M 44 62 Q 50 67 56 62" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" />
+          {/* Mouth according to expression */}
+          {isTalking ? (
+            /* Open talking anime mouth */
+            <path d="M 44 60 Q 50 69 56 60 Z" fill="#b91c1c" stroke="#78350f" strokeWidth="1" />
+          ) : isHappy ? (
+            /* Big joyful open grin */
+            <path d="M 43 61 Q 50 71 57 61 Z" fill="#ef4444" stroke="#78350f" strokeWidth="1.2" />
+          ) : isSurprised ? (
+            /* Surprised O mouth */
+            <ellipse cx="50" cy="63" rx="3.5" ry="4.5" fill="#dc2626" />
+          ) : isThinking ? (
+            /* Thinking line mouth */
+            <line x1="45" y1="63" x2="55" y2="61" stroke="#b45309" strokeWidth="2" strokeLinecap="round" />
+          ) : (
+            /* Cheerful anime mouth grin */
+            <path d="M 44 62 Q 50 67 56 62" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" />
+          )}
+
           {/* Cheek blush */}
-          <ellipse cx="36" cy="58" rx="3" ry="1.5" fill="#f87171" opacity="0.6" />
-          <ellipse cx="64" cy="58" rx="3" ry="1.5" fill="#f87171" opacity="0.6" />
+          <ellipse cx="36" cy="58" rx="3.5" ry="2" fill="#f87171" opacity={isHappy ? '0.85' : '0.5'} />
+          <ellipse cx="64" cy="58" rx="3.5" ry="2" fill="#f87171" opacity={isHappy ? '0.85' : '0.5'} />
         </svg>
       </div>
     );
@@ -80,7 +216,14 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
   if (id === 'ren') {
     // 🦊 Ren: Kitsune Anime Sensei with Fox Ears & Sacred Markings
     return (
-      <div className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md ${className}`}>
+      <div
+        onClick={onClick}
+        className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md select-none transition-transform duration-200 ${
+          onClick ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+        } ${getOuterRings()} ${className}`}
+      >
+        {renderEmoteBadge()}
+        {renderSoundWave()}
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="renBg" x1="0" y1="0" x2="1" y2="1">
@@ -98,10 +241,8 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
           <polygon points="20,20 21,25 26,25 22,28 23,33 20,30 17,33 18,28 14,25 19,25" fill="#facc15" opacity="0.4" />
 
           {/* Fox Ears */}
-          {/* Left ear */}
           <polygon points="20,40 32,10 44,35" fill="#ffffff" stroke="#c7d2fe" strokeWidth="1.5" />
           <polygon points="24,36 32,18 40,32" fill="#f43f5e" />
-          {/* Right ear */}
           <polygon points="80,40 68,10 56,35" fill="#ffffff" stroke="#c7d2fe" strokeWidth="1.5" />
           <polygon points="76,36 68,18 60,32" fill="#f43f5e" />
 
@@ -124,8 +265,14 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
           <path d="M 37 54 Q 42 58 47 54" fill="none" stroke="#312e81" strokeWidth="2.5" strokeLinecap="round" />
           <path d="M 53 54 Q 58 58 63 54" fill="none" stroke="#312e81" strokeWidth="2.5" strokeLinecap="round" />
 
-          {/* Cute mouth */}
-          <path d="M 47 64 Q 50 67 53 64" fill="none" stroke="#be123c" strokeWidth="1.8" strokeLinecap="round" />
+          {/* Mouth */}
+          {isTalking ? (
+            <path d="M 46 62 Q 50 69 54 62 Z" fill="#be123c" />
+          ) : isSurprised ? (
+            <circle cx="50" cy="64" r="3" fill="#be123c" />
+          ) : (
+            <path d="M 47 64 Q 50 67 53 64" fill="none" stroke="#be123c" strokeWidth="1.8" strokeLinecap="round" />
+          )}
         </svg>
       </div>
     );
@@ -134,7 +281,14 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
   if (id === 'long') {
     // 🐉 Maestro Long: Wise Chinese Dragon Master
     return (
-      <div className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md ${className}`}>
+      <div
+        onClick={onClick}
+        className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md select-none transition-transform duration-200 ${
+          onClick ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+        } ${getOuterRings()} ${className}`}
+      >
+        {renderEmoteBadge()}
+        {renderSoundWave()}
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="longBg" x1="0" y1="0" x2="1" y2="1">
@@ -171,14 +325,28 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
           {/* Goatee */}
           <path d="M 47 67 Q 50 82 53 67 Z" fill="#ffffff" />
 
-          {/* Eyes (Wise martial artist gaze) */}
-          <ellipse cx="41" cy="52" rx="4" ry="4" fill="#1c1917" />
-          <circle cx="42" cy="50.5" r="1.5" fill="#ffffff" />
-          <path d="M 35 46 L 47 48" stroke="#1c1917" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Eyes (Wise martial artist gaze or smiling) */}
+          {isHappy ? (
+            <>
+              <path d="M 36 52 Q 41 47 46 52" fill="none" stroke="#1c1917" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 54 52 Q 59 47 64 52" fill="none" stroke="#1c1917" strokeWidth="2.5" strokeLinecap="round" />
+            </>
+          ) : (
+            <>
+              <ellipse cx="41" cy="52" rx="4" ry="4" fill="#1c1917" />
+              <circle cx="42" cy="50.5" r="1.5" fill="#ffffff" />
+              <path d="M 35 46 L 47 48" stroke="#1c1917" strokeWidth="2.5" strokeLinecap="round" />
 
-          <ellipse cx="59" cy="52" rx="4" ry="4" fill="#1c1917" />
-          <circle cx="60" cy="50.5" r="1.5" fill="#ffffff" />
-          <path d="M 53 48 L 65 46" stroke="#1c1917" strokeWidth="2.5" strokeLinecap="round" />
+              <ellipse cx="59" cy="52" rx="4" ry="4" fill="#1c1917" />
+              <circle cx="60" cy="50.5" r="1.5" fill="#ffffff" />
+              <path d="M 53 48 L 65 46" stroke="#1c1917" strokeWidth="2.5" strokeLinecap="round" />
+            </>
+          )}
+
+          {/* Mouth */}
+          {isTalking && (
+            <path d="M 46 63 Q 50 68 54 63 Z" fill="#dc2626" />
+          )}
         </svg>
       </div>
     );
@@ -187,7 +355,14 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
   if (id === 'arthur') {
     // 🎩 Sir Arthur: London Gentleman with Top Hat & Monocle
     return (
-      <div className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md ${className}`}>
+      <div
+        onClick={onClick}
+        className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md select-none transition-transform duration-200 ${
+          onClick ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+        } ${getOuterRings()} ${className}`}
+      >
+        {renderEmoteBadge()}
+        {renderSoundWave()}
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="arthurBg" x1="0" y1="0" x2="1" y2="1">
@@ -215,17 +390,21 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
           <path d="M 72 50 Q 70 62 66 65" stroke="#94a3b8" strokeWidth="4" strokeLinecap="round" fill="none" />
 
           {/* Eyes & Monocle */}
-          {/* Left Eye */}
           <circle cx="41" cy="54" r="3.5" fill="#0f172a" />
           <path d="M 36 49 Q 41 46 46 49" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
 
           {/* Right Eye with Monocle */}
-          <circle cx="59" cy="54" r="8" fill="none" stroke="#f59e0b" strokeWidth="2" />
+          <circle cx="59" cy="54" r={isSurprised ? '9.5' : '8'} fill="none" stroke="#f59e0b" strokeWidth="2" />
           <circle cx="59" cy="54" r="3.5" fill="#0f172a" />
           <path d="M 67 54 Q 74 62 76 74" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
 
           {/* British Moustache */}
           <path d="M 50 63 Q 42 59 36 63 Q 44 67 50 64 Q 56 67 64 63 Q 58 59 50 63 Z" fill="#64748b" />
+
+          {/* Mouth when talking */}
+          {isTalking && (
+            <ellipse cx="50" cy="67" rx="3" ry="2.2" fill="#dc2626" />
+          )}
         </svg>
       </div>
     );
@@ -233,7 +412,14 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
 
   // 🌸 Mei: Cheerful Anime Girl with Pink Ribbons
   return (
-    <div className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md ${className}`}>
+    <div
+      onClick={onClick}
+      className={`${currentSize} relative rounded-2xl overflow-hidden shrink-0 shadow-md select-none transition-transform duration-200 ${
+        onClick ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+      } ${getOuterRings()} ${className}`}
+    >
+      {renderEmoteBadge()}
+      {renderSoundWave()}
       <svg viewBox="0 0 100 100" className="w-full h-full">
         <defs>
           <linearGradient id="meiBg" x1="0" y1="0" x2="1" y2="1">
@@ -261,23 +447,40 @@ export const MangaAvatar: React.FC<MangaAvatarProps> = ({ id, size = 'md', class
         {/* Anime Hair Twin Bangs */}
         <path d="M 26 44 L 20 64 L 32 50 L 38 60 L 44 42 L 50 56 L 56 42 L 62 60 L 68 50 L 80 64 L 74 44 Q 50 24 26 44 Z" fill="url(#meiHair)" />
 
-        {/* Sparkling Big Anime Eyes */}
-        <ellipse cx="41" cy="52" rx="5" ry="6.5" fill="#881337" />
-        <ellipse cx="41" cy="53" rx="4" ry="5.5" fill="#e11d48" />
-        <circle cx="40" cy="50" r="2" fill="#ffffff" />
-        <circle cx="43" cy="54" r="1" fill="#ffffff" />
+        {/* Big Sparkling Anime Eyes */}
+        {isHappy ? (
+          <>
+            <path d="M 36 53 Q 41 46 47 53" fill="none" stroke="#881337" strokeWidth="3" strokeLinecap="round" />
+            <path d="M 54 53 Q 59 46 65 53" fill="none" stroke="#881337" strokeWidth="3" strokeLinecap="round" />
+          </>
+        ) : (
+          <>
+            <ellipse cx="41" cy="52" rx="5" ry="6.5" fill="#881337" />
+            <ellipse cx="41" cy="53" rx="4" ry="5.5" fill="#e11d48" />
+            <circle cx="40" cy="50" r="2" fill="#ffffff" />
+            <circle cx="43" cy="54" r="1" fill="#ffffff" />
 
-        <ellipse cx="59" cy="52" rx="5" ry="6.5" fill="#881337" />
-        <ellipse cx="59" cy="53" rx="4" ry="5.5" fill="#e11d48" />
-        <circle cx="58" cy="50" r="2" fill="#ffffff" />
-        <circle cx="61" cy="54" r="1" fill="#ffffff" />
+            <ellipse cx="59" cy="52" rx="5" ry="6.5" fill="#881337" />
+            <ellipse cx="59" cy="53" rx="4" ry="5.5" fill="#e11d48" />
+            <circle cx="58" cy="50" r="2" fill="#ffffff" />
+            <circle cx="61" cy="54" r="1" fill="#ffffff" />
+          </>
+        )}
 
-        {/* Cheerful Smile */}
-        <path d="M 46 64 Q 50 68 54 64" fill="none" stroke="#be123c" strokeWidth="2" strokeLinecap="round" />
+        {/* Mouth */}
+        {isTalking ? (
+          <path d="M 45 61 Q 50 70 55 61 Z" fill="#e11d48" stroke="#be123c" strokeWidth="1" />
+        ) : isHappy ? (
+          <path d="M 44 62 Q 50 71 56 62 Z" fill="#e11d48" stroke="#be123c" strokeWidth="1" />
+        ) : isSurprised ? (
+          <ellipse cx="50" cy="65" rx="3.5" ry="4.5" fill="#e11d48" />
+        ) : (
+          <path d="M 46 64 Q 50 68 54 64" fill="none" stroke="#be123c" strokeWidth="2" strokeLinecap="round" />
+        )}
 
         {/* Rosy Blushes */}
-        <ellipse cx="34" cy="58" rx="3.5" ry="2" fill="#fb7185" opacity="0.7" />
-        <ellipse cx="66" cy="58" rx="3.5" ry="2" fill="#fb7185" opacity="0.7" />
+        <ellipse cx="34" cy="58" rx="3.5" ry="2" fill="#fb7185" opacity={isHappy ? '0.9' : '0.65'} />
+        <ellipse cx="66" cy="58" rx="3.5" ry="2" fill="#fb7185" opacity={isHappy ? '0.9' : '0.65'} />
       </svg>
     </div>
   );
